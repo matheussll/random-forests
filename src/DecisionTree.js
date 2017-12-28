@@ -26,21 +26,22 @@ const getAttributesCount = (trainingSet) => {
 };
 
 
-const getInfo = (outputCount, total) => {
+const getInfo = (count, total) => {
   let info = 0;
-  Object.entries(outputCount).forEach(([key, value]) => {
+  Object.entries(count).forEach(([key, value]) => {
     const elementEntropy = ((-value / total) * Math.log2(value / total));
     info += elementEntropy;
   });
   return info;
 };
 
-
 const decisionTree = (trainingSet) => {
   const attributesCount = getAttributesCount(trainingSet);
-  const { outputCount, totalEntries } = attributesCount;
-  const info = getInfo(outputCount, totalEntries);
-  return info;
+  const { inputsCount, outputCount, totalEntries } = attributesCount;
+  const outputInfo = getInfo(outputCount, totalEntries);
+  const inputInfos = inputsCount.map(inputCount => getInfo(inputCount, totalEntries));
+  const inputGain = inputInfos.map(inputInfo => outputInfo - inputInfo);
+  return inputGain;
 };
 
 export default decisionTree;
