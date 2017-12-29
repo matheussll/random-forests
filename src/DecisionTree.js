@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import Node from './Node';
 
 const getAttributesCount = (trainingSet) => {
   const inputs = [];
@@ -61,22 +62,65 @@ const getInputInfo = (count, total, attributeCountByOutput) => {
         }
       });
     });
-    console.log(sum);
     const mul = value / total;
-    console.log(mul);
-
     info += mul * sum;
   });
   return info;
 };
 
-const decisionTree = (trainingSet) => {
+const getDatasetGain = (trainingSet) => {
   const attributesCount = getAttributesCount(trainingSet);
   const { inputsCount, outputCount, totalEntries, attributesCountByOutput } = attributesCount;
   const outputInfo = getInfo(outputCount, totalEntries);
   const inputInfos = inputsCount.map((inputCount, index) => getInputInfo(inputCount, totalEntries, attributesCountByOutput[index]));
   const inputGain = inputInfos.map(inputInfo => outputInfo - inputInfo);
   return inputGain;
+};
+
+// const tree = new Node();
+const checkHomogeneousDataset = trainingSet => trainingSet.every((element, i, arr) => element.output === arr[0].output);
+
+const getMostFrequentOutput = (trainingSet) => {
+  const array = trainingSet.map(entry => entry.output);
+  return array.sort((a, b) => array.filter(v => v === a).length - array.filter(v => v === b).length).pop();
+};
+
+const decisionTree = (trainingSet, father) => {
+  const isDatasetHomogeneous = checkHomogeneousDataset(trainingSet);
+  const isDatasetEmpty = trainingSet.length === 0;
+  const isAttributeListEmpty = trainingSet[0].input.length === 0;
+  const newNode = new Node();
+  newNode.father = father;
+  newNode.sons = [];
+  if (isDatasetHomogeneous) {
+    newNode.value = trainingSet[0].output;
+    return newNode;
+  } else if (isAttributeListEmpty) {
+    const mostFrequentOutput = getMostFrequentOutput(trainingSet);
+    newNode.value = mostFrequentOutput;
+    return newNode;
+  }
+  const gain = getDatasetGain(trainingSet);
+  const maxGain = Math.max(...gain);
+  const index = gain.indexOf(maxGain);
+  const newTrainingSet = JSON.parse(JSON.stringify(trainingSet));
+  const removedAttributes = newTrainingSet.map(entry => entry.input.splice(index, 1));
+  const mergedRemovedAttributes = removedAttributes.reduce((a, b) => [...a, ...b]);
+  const removedAttributesValues = _.uniq(mergedRemovedAttributes);
+  const newDatasets = [];
+  removedAttributesValues.forEach((value) => {
+    let valueDataset = JSON.parse(JSON.stringify(trainingSet));
+    valueDataset = valueDataset.filter(entry => entry.input[index] === value);
+    valueDataset.map(entry => entry.input.splice(index, 1));
+    newDatasets.push({ dataset: valueDataset, attributeValue: value, attributeIndex: index });
+  });
+
+  newDatasets.forEach((entry) => {
+    newNode.attributeIndex = entry.attributeIndex;
+    newNode.sons.push(decisionTree(entry.dataset, newNode));
+  });
+
+  return newNode;
 };
 
 export default decisionTree;
