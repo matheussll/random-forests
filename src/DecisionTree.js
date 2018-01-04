@@ -106,19 +106,47 @@ const decisionTree = (trainingSet, father) => {
   const newTrainingSet = JSON.parse(JSON.stringify(trainingSet));
   const removedAttributes = newTrainingSet.map(entry => entry.input.splice(index, 1));
   const mergedRemovedAttributes = removedAttributes.reduce((a, b) => [...a, ...b]);
+  // console.log(mergedRemovedAttributes);
+
+  const removedAttributesValuesWithOutputs = [];
   const removedAttributesValues = _.uniq(mergedRemovedAttributes);
-  const newDatasets = [];
-  removedAttributesValues.forEach((value) => {
-    let valueDataset = JSON.parse(JSON.stringify(trainingSet));
-    valueDataset = valueDataset.filter(entry => entry.input[index] === value);
-    valueDataset.map(entry => entry.input.splice(index, 1));
-    newDatasets.push({ dataset: valueDataset, attributeValue: value, attributeIndex: index });
+
+  removedAttributesValues.forEach((entry) => {
+    const values = [];
+    values.push(trainingSet.filter(setEntry => setEntry.input[index] === entry).map(val => val.output));
+    removedAttributesValuesWithOutputs.push({ value: entry, outputs: values });
   });
 
-  newDatasets.forEach((entry) => {
-    newNode.attributeIndex = entry.attributeIndex;
-    newNode.sons.push(decisionTree(entry.dataset, newNode));
+  removedAttributesValuesWithOutputs.sort((a, b) => a.value - b.value);
+
+  removedAttributesValuesWithOutputs.forEach((a) => {
+    console.log('index do atributo: ', index, 'valor do atributo: ', a.value, 'outputs do valor: ', a.outputs);
   });
+  // const newDatasets = [];
+
+  // removedAttributesValues.forEach((value) => {
+  //   let valueDataset = JSON.parse(JSON.stringify(trainingSet));
+  //   valueDataset = valueDataset.filter(entry => entry.input[index] === value);
+  //   valueDataset.map(entry => entry.input.splice(index, 1));
+  //   newDatasets.push({ dataset: valueDataset, attributeValue: value, attributeIndex: index });
+  // });
+  // const removedAttributesValuesWithOutputs = [];
+  // // removedAttributesValues.map((entry, entryIndex) => removedAttributesValuesWithOutputs.push({ value: entry, output: trainingSet[entryIndex].output }));
+  // // removedAttributesValuesWithOutputs.sort((a, b) => a.value - b.value);
+  // const newDatasets = [];
+
+  // removedAttributesValues.forEach((value) => {
+  //   let valueDataset = JSON.parse(JSON.stringify(trainingSet));
+  //   valueDataset = valueDataset.filter(entry => entry.input[index] === value);
+  //   valueDataset.map(entry => entry.input.splice(index, 1));
+  //   newDatasets.push({ dataset: valueDataset, attributeValue: value, attributeIndex: index });
+  // });
+
+  // console.log(removedAttributesValuesWithOutputs);
+  // newDatasets.forEach((entry) => {
+  //   newNode.attributeIndex = entry.attributeIndex;
+  //   newNode.sons.push(decisionTree(entry.dataset, newNode));
+  // });
 
   return newNode;
 };
