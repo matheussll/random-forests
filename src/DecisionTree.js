@@ -85,6 +85,44 @@ const getMostFrequentOutput = (trainingSet) => {
   return array.sort((a, b) => array.filter(v => v === a).length - array.filter(v => v === b).length).pop();
 };
 
+const getCutPointsFromArray = (valuesWithOutputsArray) =>{
+  const potentialCutPoints = [];
+  // populate structure with potential cutpoints
+  valuesWithOutputsArray.forEach((a, ind) => {
+      let lastOutputIndex = a.outputs[0].length - 1;
+      if(ind == 0){
+        potentialCutPoints.push({ value: a.value, output: a.outputs[0][lastOutputIndex] });
+      } else if(ind != (valuesWithOutputsArray.length - 1)){
+        potentialCutPoints.push({ value: a.value, output: a.outputs[0][0] });
+        potentialCutPoints.push({ value: a.value, output: a.outputs[0][lastOutputIndex] });
+      } else if (ind == (valuesWithOutputsArray.length - 1)){
+        potentialCutPoints.push({ value: a.value, output: a.outputs[0][0] });
+      }
+    //
+    //console.log('index do atributo: ', index, 'valor do atributo: ', a.value, 'outputs do valor: ', a.outputs);
+  });
+  //console.log('test:', removedAttributesValuesWithOutputs[0].outputs[0][0]);
+  // potentialCutPoints contains the first and the last values for each attributeValue (except first and last indexes), and its respective output.
+  //console.log('potentialCutPoints:', potentialCutPoints);
+
+  let i = 0;
+  const cutPoints = [];
+  while(i < potentialCutPoints.length - 1){
+    if(potentialCutPoints[i].output != potentialCutPoints[i+1].output){
+      cutPoints.push((potentialCutPoints[i].value + potentialCutPoints[i+1].value) / 2);
+    }
+    if((i + 3) < potentialCutPoints.length){
+      i += 2;
+    } else{
+      i = potentialCutPoints.length - 1;
+    } 
+    // you need to get paired entries, a cutpoint is a pair of different values with distinct outputs (e.g. (0,1), (1,2), ...).
+  }
+  return cutPoints;
+};
+// now, if value < cutPoint[n] then output <= yes, otherwise output <= no
+// but some datasets have 3 output classes...
+
 const decisionTree = (trainingSet, father) => {
   const isDatasetHomogeneous = checkHomogeneousDataset(trainingSet);
   const isDatasetEmpty = trainingSet.length === 0;
@@ -118,41 +156,9 @@ const decisionTree = (trainingSet, father) => {
   });
 
   removedAttributesValuesWithOutputs.sort((a, b) => a.value - b.value);
-  const potentialCutPoints = [];
-  // populate structure with potential cutpoints
-  removedAttributesValuesWithOutputs.forEach((a, ind) => {
-      let lastOutputIndex = a.outputs[0].length - 1;
-      if(ind == 0){
-        potentialCutPoints.push({ value: a.value, output: a.outputs[0][lastOutputIndex] });
-      } else if(ind != (removedAttributesValuesWithOutputs.length - 1)){
-        potentialCutPoints.push({ value: a.value, output: a.outputs[0][0] });
-        potentialCutPoints.push({ value: a.value, output: a.outputs[0][lastOutputIndex] });
-      } else if (ind == (removedAttributesValuesWithOutputs.length - 1)){
-        potentialCutPoints.push({ value: a.value, output: a.outputs[0][0] });
-      }
-    //
-    //console.log('index do atributo: ', index, 'valor do atributo: ', a.value, 'outputs do valor: ', a.outputs);
-  });
-  //console.log('test:', removedAttributesValuesWithOutputs[0].outputs[0][0]);
-  // potentialCutPoints contains the first and the last values for each attributeValue (except first and last indexes), and its respective output.
-  console.log('potentialCutPoints:', potentialCutPoints);
 
-  let i = 0;
-  const cutPoints = [];
-  while(i < potentialCutPoints.length - 1){
-    if(potentialCutPoints[i].output != potentialCutPoints[i+1].output){
-      cutPoints.push((potentialCutPoints[i].value + potentialCutPoints[i+1].value) / 2);
-    }
-    if((i + 3) < potentialCutPoints.length){
-      i += 2;
-    } else{
-      i = potentialCutPoints.length - 1;
-    } 
-    // you need to get paired entries, a cutpoint is a pair of different values with distinct outputs (e.g. (0,1), (1,2), ...).
-  }
+  const cutPoints = getCutPointsFromArray(removedAttributesValuesWithOutputs);
   console.log('cutPoints: ', cutPoints);
-  // now, if value < cutPoint[n] then output <= yes, otherwise output <= no
-  // but some datasets have 3 output classes...
 
   // const newDatasets = [];
 
