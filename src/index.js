@@ -66,6 +66,12 @@ TrainingSet0.forEach(element => {
     element.output == 0 ? attrString = attrString.concat("Não") : attrString = attrString.concat("Sim");
     testDataSet.push(attrString = attrString);
 });
-console.log(testDataSet);
+//console.log(testDataSet);
+
+
+const attributeList = TrainingSet0[0].input.map((attr,index) => index);
+const tree = decisionTree(TrainingSet0, attributeList);
+//console.log('Tree: ', tree);
+console.log(tree.sons[2]);
 
 /* =====================*/

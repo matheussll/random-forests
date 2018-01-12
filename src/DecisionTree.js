@@ -123,13 +123,16 @@ const getCutPointsFromArray = (valuesWithOutputsArray) =>{
 // now, if value < cutPoint[n] then output <= yes, otherwise output <= no
 // but some datasets have 3 output classes...
 
-const decisionTree = (trainingSet, father) => {
+const decisionTree = (trainingSet, attributeList) => {
+  //console.log('dataSet: ', trainingSet);
   const isDatasetHomogeneous = checkHomogeneousDataset(trainingSet);
   const isDatasetEmpty = trainingSet.length === 0;
-  const isAttributeListEmpty = trainingSet[0].input.length === 0;
+  const isAttributeListEmpty = attributeList.length === 0;
+
   const newNode = new Node();
-  newNode.father = father;
   newNode.sons = [];
+
+  //console.log("H: ", isDatasetHomogeneous, "de ", isDatasetEmpty, "ae ", isAttributeListEmpty);
   if (isDatasetHomogeneous) {
     newNode.value = trainingSet[0].output;
     return newNode;
@@ -139,52 +142,29 @@ const decisionTree = (trainingSet, father) => {
     return newNode;
   }
   const gain = getDatasetGain(trainingSet);
+  //console.log("Gains: ", gain);
   const maxGain = Math.max(...gain);
   const index = gain.indexOf(maxGain);
+
+  attributeList.splice(index, 1);
+
   const newTrainingSet = JSON.parse(JSON.stringify(trainingSet));
   const removedAttributes = newTrainingSet.map(entry => entry.input.splice(index, 1));
   const mergedRemovedAttributes = removedAttributes.reduce((a, b) => [...a, ...b]);
-  // console.log(mergedRemovedAttributes);
-
-  const removedAttributesValuesWithOutputs = [];
   const removedAttributesValues = _.uniq(mergedRemovedAttributes);
 
-  removedAttributesValues.forEach((entry) => {
-    const values = [];
-    values.push(trainingSet.filter(setEntry => setEntry.input[index] === entry).map(val => val.output));
-    removedAttributesValuesWithOutputs.push({ value: entry, outputs: values });
+  const dataSets = [];
+  removedAttributesValues.forEach(value =>{
+    dataSets.push(trainingSet.filter(entry => entry.input[index] === value));
   });
 
-  removedAttributesValuesWithOutputs.sort((a, b) => a.value - b.value);
-
-  const cutPoints = getCutPointsFromArray(removedAttributesValuesWithOutputs);
-  console.log('cutPoints: ', cutPoints);
-
-  // const newDatasets = [];
-
-  // removedAttributesValues.forEach((value) => {
-  //   let valueDataset = JSON.parse(JSON.stringify(trainingSet));
-  //   valueDataset = valueDataset.filter(entry => entry.input[index] === value);
-  //   valueDataset.map(entry => entry.input.splice(index, 1));
-  //   newDatasets.push({ dataset: valueDataset, attributeValue: value, attributeIndex: index });
-  // });
-  // const removedAttributesValuesWithOutputs = [];
-  // // removedAttributesValues.map((entry, entryIndex) => removedAttributesValuesWithOutputs.push({ value: entry, output: trainingSet[entryIndex].output }));
-  // // removedAttributesValuesWithOutputs.sort((a, b) => a.value - b.value);
-  // const newDatasets = [];
-
-  // removedAttributesValues.forEach((value) => {
-  //   let valueDataset = JSON.parse(JSON.stringify(trainingSet));
-  //   valueDataset = valueDataset.filter(entry => entry.input[index] === value);
-  //   valueDataset.map(entry => entry.input.splice(index, 1));
-  //   newDatasets.push({ dataset: valueDataset, attributeValue: value, attributeIndex: index });
-  // });
-
-  // console.log(removedAttributesValuesWithOutputs);
-  // newDatasets.forEach((entry) => {
-  //   newNode.attributeIndex = entry.attributeIndex;
-  //   newNode.sons.push(decisionTree(entry.dataset, newNode));
-  // });
+  dataSets.forEach(dataSet =>{
+    if(dataSet.length === 0){
+      newNode.value = getMostFrequentOutput(trainingSet);
+      return newNode;
+    }
+    newNode.sons.push(decisionTree(dataSet, attributeList));
+  });
 
   return newNode;
 };
