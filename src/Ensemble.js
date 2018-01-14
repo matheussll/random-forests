@@ -3,6 +3,7 @@ function createBootstrap(trainingSet){
     let newTrainingSet = [];
       while(i < trainingSet.length){
         let index = getRandomArbitrary(0, trainingSet.length);
+        //console.log('index: ', index);
         newTrainingSet.push(trainingSet[index]);
         i++;
       }
@@ -10,7 +11,7 @@ function createBootstrap(trainingSet){
     }
     
 function getRandomArbitrary(min, max) {
-      return Math.random() * (max - min) + min;
+      return Math.floor((Math.random() * (max - min) + min));
     }
 
 const getMajorityVote = (votes) =>{
@@ -48,4 +49,4 @@ const getMajorityVote = (votes) =>{
   return outputClass;
 }
 
-export default getMajorityVote;
+module.exports = {createBootstrap, getRandomArbitrary};

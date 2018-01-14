@@ -1,5 +1,6 @@
-import decisionTree from './DecisionTree';
-import getMajorityVotes from './Ensemble';
+import {printTree, decisionTree} from './DecisionTree';
+import {createBootstrap, getRandomArbitrary} from './Ensemble';
+import crossValidation from './CrossValidation';
 import { TrainingSet0, TrainingSet1, TrainingSet2, TrainingSet3 } from './TrainingSets';
 
 
@@ -20,7 +21,7 @@ const majorityVote = getMajorityVotes(votes);
 console.log('Majority vote: ', majorityVote);*/
 
 // Displays dataSet from: https://moodle.inf.ufrgs.br/pluginfile.php/117478/mod_resource/content/1/ExemploAD.pdf
-const testDataSet = [];
+/*const testDataSet = [];
 TrainingSet0.forEach(element => {
     var attrString = new String();
     element.input.forEach((attr, index) =>{
@@ -66,12 +67,51 @@ TrainingSet0.forEach(element => {
     element.output == 0 ? attrString = attrString.concat("Não") : attrString = attrString.concat("Sim");
     testDataSet.push(attrString = attrString);
 });
-//console.log(testDataSet);
+//console.log(testDataSet);*/
 
-
+// Generates Attribute List with m attributes, where m = sqrt(dataset.length)
 const attributeList = TrainingSet0[0].input.map((attr,index) => index);
-const tree = decisionTree(TrainingSet0, attributeList);
+for(let i = 0; i < Math.sqrt(attributeList.length); i++){
+    attributeList.splice(getRandomArbitrary(0, attributeList.length), 1);
+}
+//console.log('attributeList: ', attributeList);
+//const tree = decisionTree(TrainingSet0, attributeList);
+
+
+let stop = true;
+const ntree = 5;
+
+const crossValidationSets = crossValidation(TrainingSet0);
+
+let ntreeTrainingSets = [];
+for(let counter = 0; counter < crossValidationSets.trainingSets.length; counter++){
+    const bootstraps = [];
+    for(let i = 0; i < ntree; i++){
+        bootstraps.push(createBootstrap(crossValidationSets.trainingSets[counter].trainingSet));
+    }
+    ntreeTrainingSets.push(bootstraps);
+    //console.log('Counter: ', counter, 'ntreeTrainingSets: ', bootstraps);
+}
+
+const ensemble = [];
+ntreeTrainingSets.forEach(trainingSet =>{
+    let randomForest = [];
+    trainingSet.forEach(ntreeTrainingSet =>{
+        randomForest.push(decisionTree(trainingSet, attributeList));
+    });
+    ensemble.push(randomForest);
+});
+console.log('Ensemble of Random Forests: ', ensemble);
+
+
+//console.log('== CrossValidation ==');
+//console.log(crossValidationSets);
+
+
+
+
+//const print = printTree(tree.sons, tree.label);
 //console.log('Tree: ', tree);
-console.log(tree.sons[2]);
+//console.log(tree.sons[2]);
 
 /* =====================*/

@@ -1,7 +1,8 @@
 class Node {
-  constructor(father, attributeIndex, sons, value) {
+  constructor(sons, value, label) {
     this.sons = sons;
     this.value = value;
+    this.label = label;
   }
 }
 

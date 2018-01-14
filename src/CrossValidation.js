@@ -10,6 +10,7 @@ const createCrossValidationsSets = (dataSet) => {
     while (dataSetCopy.length) {
       folds.push(dataSetCopy.splice(0, dataSet.length / 5));
     }
+    //console.log(folds);
     return folds;
   };
   
@@ -22,7 +23,7 @@ const createCrossValidationsSets = (dataSet) => {
     return arrayToShuffle;
   };
   
-  const createNetworkTestSets = (folds) => {
+  const createSetsFromFolds = (folds) => {
     const sets = [];
     for (let i = 0; i < folds.length; i += 1) {
       let trainingSet = [];
@@ -35,6 +36,18 @@ const createCrossValidationsSets = (dataSet) => {
         }
       });
       sets.push({ validationSet, trainingSet });
+      //console.log('validationSet: ', validationSet);
+      //console.log('trainingSet: ', trainingSet);
     }
     return sets;
   };
+
+  const crossValidation = (dataSet) =>{
+    const shuffledArray = shuffleArray(dataSet);
+    const separatedSets = createCrossValidationsSets(shuffledArray);
+    const folds = dataSetToFolds(separatedSets.trainingSet);
+    const crossValidationSets = createSetsFromFolds(folds);
+    return {trainingSets: crossValidationSets, testingSets: separatedSets.validationSet};
+  }
+
+  export default crossValidation;

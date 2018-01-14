@@ -142,10 +142,16 @@ const decisionTree = (trainingSet, attributeList) => {
     return newNode;
   }
   const gain = getDatasetGain(trainingSet);
-  //console.log("Gains: ", gain);
+  let fixedGain = [];
+  gain.forEach(value =>{
+    fixedGain.push(value.toFixed(3));
+  });
+  console.log("Gains: ", fixedGain);
   const maxGain = Math.max(...gain);
   const index = gain.indexOf(maxGain);
 
+  //console.log('index: ', index);
+  newNode.label = index;
   attributeList.splice(index, 1);
 
   const newTrainingSet = JSON.parse(JSON.stringify(trainingSet));
@@ -155,6 +161,8 @@ const decisionTree = (trainingSet, attributeList) => {
 
   const dataSets = [];
   removedAttributesValues.forEach(value =>{
+    //console.log('index: ', index, 'rel attr: ', value);
+    newNode.relativeAttribute = value;
     dataSets.push(trainingSet.filter(entry => entry.input[index] === value));
   });
 
@@ -169,4 +177,25 @@ const decisionTree = (trainingSet, attributeList) => {
   return newNode;
 };
 
-export default decisionTree;
+const printTree = (tree, root) =>{
+  if(root != null){
+    console.log('');
+    console.log('Root:', root);
+  }
+  tree.forEach((node, index) =>{
+    if(node.sons.length != 0){
+      console.log('');
+      console.log('Node:', node.label);
+      printTree(node.sons, null);
+    } else {
+      console.log('Leaf:', node.value);
+      if(index == (tree.length - 1)){
+        console.log('');
+      }
+    }
+  });
+}
+
+module.exports = {printTree, decisionTree};
+//export default decisionTree;
+
