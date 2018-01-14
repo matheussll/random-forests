@@ -125,9 +125,10 @@ const getCutPointsFromArray = (valuesWithOutputsArray) =>{
 
 const decisionTree = (trainingSet, attributeList) => {
   //console.log('dataSet: ', trainingSet);
+  const newAttributeList = JSON.parse(JSON.stringify(attributeList));
   const isDatasetHomogeneous = checkHomogeneousDataset(trainingSet);
   const isDatasetEmpty = trainingSet.length === 0;
-  const isAttributeListEmpty = attributeList.length === 0;
+  const isAttributeListEmpty = newAttributeList.length === 0;
 
   const newNode = new Node();
   newNode.sons = [];
@@ -152,7 +153,7 @@ const decisionTree = (trainingSet, attributeList) => {
 
   //console.log('index: ', index);
   newNode.label = index;
-  attributeList.splice(index, 1);
+  newAttributeList.splice(index, 1);
 
   const newTrainingSet = JSON.parse(JSON.stringify(trainingSet));
   const removedAttributes = newTrainingSet.map(entry => entry.input.splice(index, 1));
@@ -171,7 +172,7 @@ const decisionTree = (trainingSet, attributeList) => {
       newNode.value = getMostFrequentOutput(trainingSet);
       return newNode;
     }
-    newNode.sons.push(decisionTree(dataSet, attributeList));
+    newNode.sons.push(decisionTree(dataSet, newAttributeList));
   });
 
   return newNode;

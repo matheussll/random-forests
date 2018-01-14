@@ -3,25 +3,8 @@ import {createBootstrap, getRandomArbitrary} from './Ensemble';
 import crossValidation from './CrossValidation';
 import { TrainingSet0, TrainingSet1, TrainingSet2, TrainingSet3 } from './TrainingSets';
 
-
-//const info = decisionTree(TrainingSet1);
-//console.log('Ganho dos inputs do TrainingSet1: ', info);
-
-/*let votes = [];
-votes.push(0);
-votes.push(1);
-votes.push(1);
-votes.push(1);
-votes.push(1);
-votes.push(2);
-votes.push(2);
-votes.push(2);
-
-const majorityVote = getMajorityVotes(votes);
-console.log('Majority vote: ', majorityVote);*/
-
 // Displays dataSet from: https://moodle.inf.ufrgs.br/pluginfile.php/117478/mod_resource/content/1/ExemploAD.pdf
-/*const testDataSet = [];
+const testDataSet = [];
 TrainingSet0.forEach(element => {
     var attrString = new String();
     element.input.forEach((attr, index) =>{
@@ -67,22 +50,32 @@ TrainingSet0.forEach(element => {
     element.output == 0 ? attrString = attrString.concat("Não") : attrString = attrString.concat("Sim");
     testDataSet.push(attrString = attrString);
 });
-//console.log(testDataSet);*/
+console.log('/== Benchmark Tree ==/');
+console.log(testDataSet);
+console.log('');
 
 // Generates Attribute List with m attributes, where m = sqrt(dataset.length)
 const attributeList = TrainingSet0[0].input.map((attr,index) => index);
-for(let i = 0; i < Math.sqrt(attributeList.length); i++){
-    attributeList.splice(getRandomArbitrary(0, attributeList.length), 1);
-}
 //console.log('attributeList: ', attributeList);
-//const tree = decisionTree(TrainingSet0, attributeList);
 
+// Printing benchmark tree
+const tree = decisionTree(TrainingSet0, attributeList);
+const print = printTree(tree.sons, tree.label);
+//console.log('Tree: ', tree);
+//console.log(tree.sons[2]);
 
-let stop = true;
+/* ENSEMBLE LEARNING WITH RANDOM FOREST */
+/*
+*/                                      
+
+console.log('/== Random Forest ==/');
+// Ntree Hardcoded
 const ntree = 5;
 
+// Creating sets for cross-validation
 const crossValidationSets = crossValidation(TrainingSet0);
 
+// Creating bootstraps
 let ntreeTrainingSets = [];
 for(let counter = 0; counter < crossValidationSets.trainingSets.length; counter++){
     const bootstraps = [];
@@ -90,28 +83,22 @@ for(let counter = 0; counter < crossValidationSets.trainingSets.length; counter+
         bootstraps.push(createBootstrap(crossValidationSets.trainingSets[counter].trainingSet));
     }
     ntreeTrainingSets.push(bootstraps);
-    //console.log('Counter: ', counter, 'ntreeTrainingSets: ', bootstraps);
 }
 
+// Generating Random Forest
 const ensemble = [];
 ntreeTrainingSets.forEach(trainingSet =>{
     let randomForest = [];
     trainingSet.forEach(ntreeTrainingSet =>{
-        randomForest.push(decisionTree(trainingSet, attributeList));
+        const newAttributeList = JSON.parse(JSON.stringify(attributeList));
+        for(let i = 0; i < Math.sqrt(newAttributeList.length); i++){
+            newAttributeList.splice(getRandomArbitrary(0, newAttributeList.length), 1);
+        }
+        randomForest.push(decisionTree(ntreeTrainingSet, newAttributeList));
     });
+    //console.log('tree: ', randomForest);
     ensemble.push(randomForest);
 });
 console.log('Ensemble of Random Forests: ', ensemble);
-
-
-//console.log('== CrossValidation ==');
-//console.log(crossValidationSets);
-
-
-
-
-//const print = printTree(tree.sons, tree.label);
-//console.log('Tree: ', tree);
-//console.log(tree.sons[2]);
 
 /* =====================*/
