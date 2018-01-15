@@ -147,7 +147,7 @@ const decisionTree = (trainingSet, attributeList) => {
   gain.forEach(value =>{
     fixedGain.push(value.toFixed(3));
   });
-  console.log("Gains: ", fixedGain);
+  //console.log("Gains: ", fixedGain);
   const maxGain = Math.max(...gain);
   const index = gain.indexOf(maxGain);
 
@@ -160,19 +160,48 @@ const decisionTree = (trainingSet, attributeList) => {
   const mergedRemovedAttributes = removedAttributes.reduce((a, b) => [...a, ...b]);
   const removedAttributesValues = _.uniq(mergedRemovedAttributes);
 
-  const dataSets = [];
-  removedAttributesValues.forEach(value =>{
-    //console.log('index: ', index, 'rel attr: ', value);
-    newNode.relativeAttribute = value;
-    dataSets.push(trainingSet.filter(entry => entry.input[index] === value));
+  // CutPoints
+  const removedAttributesValuesWithOutputs = [];
+  removedAttributesValues.forEach((entry) => {
+    const values = [];
+    values.push(trainingSet.filter(setEntry => setEntry.input[index] === entry).map(val => val.output));
+    removedAttributesValuesWithOutputs.push({ value: entry, outputs: values });
   });
 
-  dataSets.forEach(dataSet =>{
-    if(dataSet.length === 0){
-      newNode.value = getMostFrequentOutput(trainingSet);
-      return newNode;
-    }
-    newNode.sons.push(decisionTree(dataSet, newAttributeList));
+  removedAttributesValuesWithOutputs.sort((a, b) => a.value - b.value);
+
+  /*removedAttributesValuesWithOutputs.forEach((a) => {
+    console.log('index do atributo: ', index, 'valor do atributo: ', a.value, 'outputs do valor: ', a.outputs);
+  });*/
+
+  const cutPoints = getCutPointsFromArray(removedAttributesValuesWithOutputs);
+  //console.log('CutPoints:');
+  //console.log(cutPoints);
+  // CutPoints
+  //console.log('Attr size: ', removedAttributesValues.length);
+  //console.log('CutPoint Size: ', cutPoints.length);
+  cutPoints.forEach((cutPoint, index) =>{
+    //console.log('CutPoint index: ', index);
+    const dataSets = [];
+    removedAttributesValues.forEach((value, idx) =>{
+    //console.log('index: ', index, 'rel attr: ', value);
+    //console.log('Attr index: ', idx);
+      if(value <= cutPoint){
+        dataSets.push(trainingSet.filter(entry => entry.input[index] <= cutPoint));
+      } else{
+        dataSets.push(trainingSet.filter(entry => entry.input[index] > cutPoint));
+      }
+    });
+    //newNode.relativeAttribute = value;
+    //dataSets.push(trainingSet.filter(entry => entry.input[index] === value));
+
+    dataSets.forEach(dataSet =>{
+      if(dataSet.length === 0){
+        newNode.value = getMostFrequentOutput(trainingSet);
+        return newNode;
+      }
+      newNode.sons.push(decisionTree(dataSet, newAttributeList));
+    });
   });
 
   return newNode;

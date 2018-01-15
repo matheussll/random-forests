@@ -50,17 +50,17 @@ TrainingSet0.forEach(element => {
     element.output == 0 ? attrString = attrString.concat("Não") : attrString = attrString.concat("Sim");
     testDataSet.push(attrString = attrString);
 });
-console.log('/== Benchmark Tree ==/');
-console.log(testDataSet);
-console.log('');
+//console.log('/== Benchmark Tree ==/');
+//console.log(testDataSet);
+//console.log('');
 
 // Generates Attribute List with m attributes, where m = sqrt(dataset.length)
-const attributeList = TrainingSet0[0].input.map((attr,index) => index);
+const attributeList = TrainingSet1[0].input.map((attr,index) => index);
 //console.log('attributeList: ', attributeList);
 
 // Printing benchmark tree
-const tree = decisionTree(TrainingSet0, attributeList);
-const print = printTree(tree.sons, tree.label);
+const tree = decisionTree(TrainingSet1, attributeList);
+//const print = printTree(tree.sons, tree.label);
 //console.log('Tree: ', tree);
 //console.log(tree.sons[2]);
 
@@ -99,6 +99,6 @@ ntreeTrainingSets.forEach(trainingSet =>{
     //console.log('tree: ', randomForest);
     ensemble.push(randomForest);
 });
-console.log('Ensemble of Random Forests: ', ensemble);
-
+//console.log('Ensemble of Random Forests: ', ensemble);
+console.log('Ensemble Learning Finished!');
 /* =====================*/
